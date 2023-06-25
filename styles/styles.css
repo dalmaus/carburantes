@@ -1,0 +1,30 @@
+*{
+    margin: 0;
+    padding: 0;
+}
+#map{
+    position: absolute;
+    height: 100%;
+    width: 100%;
+}
+.popup{
+
+}
+.popup ul{
+    list-style-type: none;
+}
+p{
+    margin: 5px 0 !important;
+    padding: 3px;
+}
+.empresa{
+
+    background: black;
+    color: white;
+    border-radius: 3px;
+    font-weight: bold;
+}
+.precios{
+    font-weight: bold;
+
+}
