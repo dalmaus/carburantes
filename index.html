@@ -2,53 +2,18 @@
 <html>
     <head>
         <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY=" crossorigin="" />
+        <link rel="stylesheet" href="https://unpkg.com/leaflet.markercluster@1.4.1/dist/MarkerCluster.css"/>
+        <link rel="stylesheet" href="https://unpkg.com/leaflet.markercluster@1.4.1/dist/MarkerCluster.Default.css"/>
         <link rel="stylesheet" href="styles/styles.css"/>
         <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo=" crossorigin=""></script>
         <script src="https://unpkg.com/axios@1.1.2/dist/axios.min.js"></script>
-        <script>
-
-            async function init(){
-                let map = L.map('map').setView([40.416607, -3.703836], 12);
-                L.tileLayer('https://tile.openstreetmap.org/{z}/{x}/{y}.png', {
-                    maxZoom: 19,
-                    attribution: '&copy; <a href="http://www.openstreetmap.org/copyright">OpenStreetMap</a>'
-                }).addTo(map);
-
-                let municipio = await axios.get('https://sedeaplicaciones.minetur.gob.es/ServiciosRESTCarburantes/PreciosCarburantes/EstacionesTerrestres/FiltroMunicipio/4354');
-
-                for(let gasolinera of municipio.data.ListaEESSPrecio){
-                    let latitud = gasolinera['Latitud'].replace(',', '.');
-                    let longitud = gasolinera['Longitud (WGS84)'].replace(',', '.');
-
-                    let marker = L.marker([latitud, longitud]).addTo(map);
-
-                    let gasolineraNombre = gasolinera['Rótulo'];
-                    let precioGasoleoA = gasolinera['Precio Gasoleo A'];
-                    let precioGasoleoB = gasolinera['Precio Gasoleo B'];
-                    let precioGasolina95 = gasolinera['Precio Gasolina 95 E5'];
-                    let precioGasolina98 = gasolinera['Precio Gasolina 95 E5'];
-
-
-
-                    marker.bindPopup(
-                        `<div class="popup">
-                            <p class="empresa">${gasolineraNombre}</p>
-                            <p class="precios">PRECIOS</p>
-                            <ul>
-                                <li>Gasoleo A: ${precioGasoleoA} €/litro</li>
-                                <li>Gasoleo B: ${precioGasoleoB} €/litro</li>
-                                <li>Gasolina 95 E5: ${precioGasolina95} €/litro</li>
-                                <li>Gasolina 95 E5: ${precioGasolina98} €/litro</li>
-                            </ul>
-                         </div>`
-                    );
-                }
-            }
-        </script>
-
+        <script src="https://unpkg.com/leaflet.markercluster@1.4.1/dist/leaflet.markercluster.js"></script>
+        <script src="scripts/script.js" charset="UTF-8"></script>
     </head>
     <body>
         <div id="map"></div>
     </body>
-    <script>init()</script>
 </html>
+<script>
+    init();
+</script>
