@@ -1,6 +1,7 @@
 async function init(){
 
     let map = createMapa();
+    L.Control.geocoder().addTo(map); //agrega botón de búsqueda
     let gasolineras = await cargaDatos();
     let markers = L.markerClusterGroup();
 
@@ -10,11 +11,9 @@ async function init(){
         addPopup(marker, gasolinera); //añade la información del marcador en click
         markers.addLayer(marker);
     }
-
     map.addLayer(markers);
 
 }
-
 
 function createMapa(){ //establece la vista inicial del mapa y establece el proveedor de 'tile layers'
     let map = L.map('map').setView([40.416607, -3.703836], 12);
