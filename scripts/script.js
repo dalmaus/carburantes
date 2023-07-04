@@ -3,11 +3,15 @@ async function init(){
     let map = createMapa();
     L.Control.geocoder().addTo(map); //agrega botón de búsqueda
     let gasolineras = await cargaDatos();
+    let precios = parsePreciosGasolineras(gasolineras);
+
+    const precioMin = getPrecioMinimo(precios);
+    const precioMax = getPrecioMaximo(precios);
+
     let markers = L.markerClusterGroup();
 
-    for(let gasolinera of gasolineras.data.ListaEESSPrecio){
-
-        let marker = addPosicionMarker(gasolinera); //posiciona el marcador
+    for(let gasolinera of gasolineras.ListaEESSPrecio){
+        let marker = addMarker(gasolinera, precioMin, precioMax); //posiciona el marcador
         addPopup(marker, gasolinera); //añade la información del marcador en click
         markers.addLayer(marker);
     }
@@ -26,12 +30,25 @@ function createMapa(){ //establece la vista inicial del mapa y establece el prov
     return map;
 
 }
-function addPosicionMarker(gasolinera){
+function addMarker(gasolinera, precioMin, precioMax){
     let latitud = gasolinera['Latitud'].replace(',', '.');
     let longitud = gasolinera['Longitud (WGS84)'].replace(',', '.');
+    let precioActual = gasolinera['Precio Gasoleo A'].replace(',', '.');
 
-    return L.marker([latitud, longitud]);
+    const maximoEscala = 5;
+
+    precioActual = (precioActual == '') ? precioMax : parseFloat(precioActual);
+    let posicionEnEscala = Math.round((precioActual-precioMin)*maximoEscala/(precioMax-precioMin))
+
+    const icono = L.icon({
+        iconUrl: `src/icons/marker-${posicionEnEscala}.png`,
+        iconSize: [24, 36],
+        popupAnchor: [0, -17]
+    })
+
+    return L.marker([latitud, longitud], {icon: icono});
 }
+
 function addPopup(marker, gasolinera){
 
     let gasolineraNombre = gasolinera['Rótulo'];
@@ -58,9 +75,27 @@ function addPopup(marker, gasolinera){
                          </div>`
     );
 }
+function parsePreciosGasolineras(gasolineras){
+    return gasolineras.ListaEESSPrecio.filter((gasolinera) => gasolinera['Precio Gasoleo A'] !== '')
+        .map((gasolinera) => parseFloat(gasolinera['Precio Gasoleo A'].replace(',','.')));
+}
+//filtra y parsea devolviendo el valor de precio más pequeño
+function getPrecioMinimo(precios){
 
+    return precios.reduce((a, b) => Math.min(a, b));
+}
+function getPrecioMaximo(precios){
+
+    return precios.reduce((a, b) => Math.max(a, b));
+}
+//escala los datos de las gasolineras del 1 al 7, correspondiéndose con los iconos de precios
+// function asignaValorEscala(precio)
 //cambiar por fichero que haga peticiones acorde a la frecuencia de actualización de la API.
 async function cargaDatos(){
-    return await axios.get('https://sedeaplicaciones.minetur.gob.es/ServiciosRESTCarburantes/PreciosCarburantes/EstacionesTerrestres/');
+
+    let respuesta =
+        await axios.get('https://sedeaplicaciones.minetur.gob.es/ServiciosRESTCarburantes/PreciosCarburantes/EstacionesTerrestres/');
+
+    return respuesta.data;
 }
 
