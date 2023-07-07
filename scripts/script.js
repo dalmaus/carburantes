@@ -8,7 +8,10 @@ async function init(){
     const precioMin = getPrecioMinimo(precios);
     const precioMax = getPrecioMaximo(precios);
 
-    let markers = L.markerClusterGroup();
+    let markers = L.markerClusterGroup({
+        maxClusterRadius: 130, //distancia a la que se forman los clusters, default 80
+        disableClusteringAtZoom: 13, //distancia de zoom a la que se desactivan los clusters
+    });
 
     for(let gasolinera of gasolineras.ListaEESSPrecio){
         let marker = addMarker(gasolinera, precioMin, precioMax); //posiciona el marcador
@@ -16,7 +19,6 @@ async function init(){
         markers.addLayer(marker);
     }
     map.addLayer(markers);
-
 }
 
 function createMapa(){ //establece la vista inicial del mapa y establece el proveedor de 'tile layers'
@@ -38,15 +40,46 @@ function addMarker(gasolinera, precioMin, precioMax){
     const maximoEscala = 5;
 
     precioActual = (precioActual == '') ? precioMax : parseFloat(precioActual);
-    let posicionEnEscala = Math.round((precioActual-precioMin)*maximoEscala/(precioMax-precioMin))
+
+    let posicionEnEscala = Math.round((precioActual-precioMin)*maximoEscala/(precioMax-precioMin)*100)/100
+    let markerIconNumero = getNumeroIcono(posicionEnEscala);
+
+
 
     const icono = L.icon({
-        iconUrl: `src/icons/marker-${posicionEnEscala}.png`,
+        iconUrl: `src/icons/marker-${markerIconNumero}.png`,
         iconSize: [24, 36],
         popupAnchor: [0, -17]
     })
 
     return L.marker([latitud, longitud], {icon: icono});
+}
+
+//devuelve el número con el que se escogerá el icono que de precio que le corresponde
+function getNumeroIcono(posicion){
+
+    let markerIconNumero = 0;
+
+    if(posicion < 1.1){
+        markerIconNumero = 0;
+    }
+    else if(posicion >= 1.1 && posicion < 1.3){
+        markerIconNumero = 1;
+    }
+    else if(posicion >= 1.3 && posicion < 1.5){
+        markerIconNumero = 2;
+    }
+    else if(posicion >= 1.5 && posicion < 1.8){
+        markerIconNumero = 3;
+    }
+    else if(posicion >= 1.8 && posicion < 2){
+        markerIconNumero = 4;
+    }
+    else{
+        markerIconNumero = 5;
+    }
+
+    return markerIconNumero;
 }
 
 function addPopup(marker, gasolinera){
