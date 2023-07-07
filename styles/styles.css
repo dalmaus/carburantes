@@ -7,15 +7,21 @@
     height: 100%;
     width: 100%;
 }
-.popup{
 
-}
 .popup ul{
     list-style-type: none;
 }
 p{
     margin: 5px 0 !important;
     padding: 3px;
+}
+.leaflet-popup-content table tr td:first-child{
+    padding: 0 16px 0 0;
+}
+.leaflet-popup-content th{
+    font-weight: normal;
+    font-size: 16px;
+    padding: 0 0 6px 0;
 }
 .empresa{
 

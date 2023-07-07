@@ -84,11 +84,11 @@ function getNumeroIcono(posicion){
 
 function addPopup(marker, gasolinera){
 
-    let gasolineraNombre = gasolinera['Rótulo'];
-    let precioGasoleoA = gasolinera['Precio Gasoleo A'];
-    let precioGasoleoB = gasolinera['Precio Gasoleo B'];
-    let precioGasolina95 = gasolinera['Precio Gasolina 95 E5'];
-    let precioGasolina98 = gasolinera['Precio Gasolina 98 E5'];
+    let gasolineraNombre = gasolinera['Rótulo'] || '-';
+    let precioGasoleoA = gasolinera['Precio Gasoleo A'] || '-';
+    let precioGasoleoB = gasolinera['Precio Gasoleo B'] || '-';
+    let precioGasolina95 = gasolinera['Precio Gasolina 95 E5'] || '-';
+    let precioGasolina98 = gasolinera['Precio Gasolina 98 E5'] || '-';
 
     if(!precioGasoleoB)
         precioGasoleoB = '-'
@@ -97,15 +97,31 @@ function addPopup(marker, gasolinera){
 
     marker.bindPopup(
         `<div class="popup">
-                            <p class="empresa">${gasolineraNombre}</p>
-                            <p class="precios">PRECIOS</p>
-                            <ul>
-                                <li>Gasoleo A: ${precioGasoleoA} €/litro</li>
-                                <li>Gasoleo B: ${precioGasoleoB} €/litro</li>
-                                <li>Gasolina 95 E5: ${precioGasolina95} €/litro</li>
-                                <li>Gasolina 98 E5: ${precioGasolina98} €/litro</li>
-                            </ul>
-                         </div>`
+            <p class="empresa">${gasolineraNombre}</p>
+            <p class="precios">PRECIOS</p>
+            <table>
+              <tr>
+                <th>Tipo</th>
+                <th>Precio €/l</th>
+              </tr>
+              <tr>
+                <td><strong>Gasoleo A</strong></td>
+                <td>${precioGasoleoA}</td>
+              </tr>
+              <tr>
+                <td><strong>Gasoleo B</strong></td>
+                <td>${precioGasoleoB}</td>
+              </tr>
+              <tr>
+                <td><strong>Gasolina 95 E5</strong></td>
+                <td>${precioGasolina95}</td>
+              </tr>
+              <tr>
+                <td><strong>Gasolina 98 E5</strong></td>
+                <td>${precioGasolina98}</td>
+              </tr>
+            </table>
+         </div>`
     );
 }
 function parsePreciosGasolineras(gasolineras){
@@ -121,8 +137,6 @@ function getPrecioMaximo(precios){
 
     return precios.reduce((a, b) => Math.max(a, b));
 }
-//escala los datos de las gasolineras del 1 al 7, correspondiéndose con los iconos de precios
-// function asignaValorEscala(precio)
 //cambiar por fichero que haga peticiones acorde a la frecuencia de actualización de la API.
 async function cargaDatos(){
 
