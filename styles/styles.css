@@ -45,3 +45,6 @@ p{
     transform: rotate(45deg);
     border: 1px solid #FFFFFF;
 }
+.boton-como-llegar:hover{
+    cursor: pointer;
+}

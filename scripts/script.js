@@ -19,6 +19,24 @@ async function init(){
         markers.addLayer(marker);
     }
     map.addLayer(markers);
+    // L.Routing.control({
+    //     waypoints: [
+    //         L.latLng(57.74, 11.94),
+    //         L.latLng(57.6792, 11.949)
+    //     ],
+    //     language: 'es',
+    //     addWaypoints: false,
+    //     lineOptions: {
+    //         styles: [{color: 'blue'}]
+    //     }
+    // }).addTo(map);
+
+    // map.on('popupopen', (e) => {
+    //     console.log(e.popup._latlng)
+    // })
+
+    // navigator.geolocation.getCurrentPosition((pos)=>console.log(pos), console.log('fial'), {enableHighAccuracy: true});
+
 }
 
 function createMapa(){ //establece la vista inicial del mapa y establece el proveedor de 'tile layers'
@@ -32,11 +50,12 @@ function createMapa(){ //establece la vista inicial del mapa y establece el prov
     return map;
 
 }
-function addMarker(gasolinera, precioMin, precioMax){
-    let latitud = gasolinera['Latitud'].replace(',', '.');
-    let longitud = gasolinera['Longitud (WGS84)'].replace(',', '.');
-    let precioActual = gasolinera['Precio Gasoleo A'].replace(',', '.');
+function markerPunto(e){
 
+}
+function addMarker(gasolinera, precioMin, precioMax){
+
+    let precioActual = gasolinera['Precio Gasoleo A'].replace(',', '.');
     const maximoEscala = 5;
 
     precioActual = (precioActual == '') ? precioMax : parseFloat(precioActual);
@@ -44,15 +63,20 @@ function addMarker(gasolinera, precioMin, precioMax){
     let posicionEnEscala = Math.round((precioActual-precioMin)*maximoEscala/(precioMax-precioMin)*100)/100
     let markerIconNumero = getNumeroIcono(posicionEnEscala);
 
-
-
     const icono = L.icon({
         iconUrl: `src/icons/marker-${markerIconNumero}.png`,
         iconSize: [24, 36],
         popupAnchor: [0, -17]
-    })
+    });
 
-    return L.marker([latitud, longitud], {icon: icono});
+    let latitud = gasolinera['Latitud'].replace(',', '.');
+    let longitud = gasolinera['Longitud (WGS84)'].replace(',', '.');
+
+    let marker = L.marker([latitud, longitud], {icon: icono});
+
+    marker.on('click', markerPunto);
+
+    return marker;
 }
 
 //devuelve el número con el que se escogerá el icono que de precio que le corresponde
@@ -95,8 +119,8 @@ function addPopup(marker, gasolinera){
     if(!precioGasolina98)
         precioGasolina98 = '-'
 
-    marker.bindPopup(
-        `<div class="popup">
+    let contenido = L.DomUtil.create("div", "popup");
+    contenido.innerHTML = `
             <p class="empresa">${gasolineraNombre}</p>
             <p class="precios">PRECIOS</p>
             <table>
@@ -121,9 +145,19 @@ function addPopup(marker, gasolinera){
                 <td>${precioGasolina98}</td>
               </tr>
             </table>
-         </div>`
-    );
+            <span><a class="boton-como-llegar">Cómo llegar...</a></span>
+`;
+    contenido.addEventListener('click', (e) => comoLlegar(e, marker._latlng.lat, marker._latlng.lng))
+    marker.bindPopup(contenido);
+
 }
+
+function comoLlegar(e, lat, lng){
+    if(e.target.classList.contains('boton-como-llegar')){
+        // código para pintar la ruta desde el usuario a la gasolinera
+    }
+}
+
 function parsePreciosGasolineras(gasolineras){
     return gasolineras.ListaEESSPrecio.filter((gasolinera) => gasolinera['Precio Gasoleo A'] !== '')
         .map((gasolinera) => parseFloat(gasolinera['Precio Gasoleo A'].replace(',','.')));
