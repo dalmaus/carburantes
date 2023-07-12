@@ -13,28 +13,15 @@ async function init(){
         disableClusteringAtZoom: 13, //distancia de zoom a la que se desactivan los clusters
     });
 
+    let routeControl = createRouteControl();
+
+
     for(let gasolinera of gasolineras.ListaEESSPrecio){
         let marker = addMarker(gasolinera, precioMin, precioMax); //posiciona el marcador
-        addPopup(marker, gasolinera); //añade la información del marcador en click
+        addPopup(routeControl, map, marker, gasolinera); //añade la información del marcador en click
         markers.addLayer(marker);
     }
     map.addLayer(markers);
-    // L.Routing.control({
-    //     waypoints: [
-    //         L.latLng(57.74, 11.94),
-    //         L.latLng(57.6792, 11.949)
-    //     ],
-    //     language: 'es',
-    //     addWaypoints: false,
-    //     lineOptions: {
-    //         styles: [{color: 'blue'}]
-    //     }
-    // }).addTo(map);
-
-    // map.on('popupopen', (e) => {
-    //     console.log(e.popup._latlng)
-    // })
-
     // navigator.geolocation.getCurrentPosition((pos)=>console.log(pos), console.log('fial'), {enableHighAccuracy: true});
 
 }
@@ -49,6 +36,16 @@ function createMapa(){ //establece la vista inicial del mapa y establece el prov
 
     return map;
 
+}
+
+function createRouteControl(){
+    return L.Routing.control({ //ver que devuelve esto y gestionar su borrado al añadir otra ruta
+        language: 'es',
+        addWaypoints: false,
+        // lineOptions: {
+        //     styles: [{color: 'blue'}]
+        // }
+    });
 }
 function markerPunto(e){
 
@@ -106,7 +103,7 @@ function getNumeroIcono(posicion){
     return markerIconNumero;
 }
 
-function addPopup(marker, gasolinera){
+function addPopup(routeControl, map, marker, gasolinera){
 
     let gasolineraNombre = gasolinera['Rótulo'] || '-';
     let precioGasoleoA = gasolinera['Precio Gasoleo A'] || '-';
@@ -145,17 +142,34 @@ function addPopup(marker, gasolinera){
                 <td>${precioGasolina98}</td>
               </tr>
             </table>
-            <span><a class="boton-como-llegar">Cómo llegar...</a></span>
+            <span class="boton-como-llegar"><a>Cómo llegar...</a></span>
 `;
-    contenido.addEventListener('click', (e) => comoLlegar(e, marker._latlng.lat, marker._latlng.lng))
+    contenido.addEventListener('click', (e) => comoLlegar(e, map, marker, routeControl));
     marker.bindPopup(contenido);
 
 }
 
-function comoLlegar(e, lat, lng){
+function comoLlegar(e, map, marker, routeControl){
+    let lat = marker._latlng.lat; //cambiar
+    let lng = marker._latlng.lng; //cambiar
     if(e.target.classList.contains('boton-como-llegar')){
-        // código para pintar la ruta desde el usuario a la gasolinera
+        let lat = marker._latlng.lat;
+        let lng = marker._latlng.lng;
+
+
     }
+
+    //este código debería ir dentro del if anterior.
+
+    if(routeControl.getWaypoints()[0].latLng == undefined){
+        routeControl.addTo(map);
+    }
+    routeControl.setWaypoints([L.latLng(lat, lng), L.latLng(40.1, -3.4)])
+
+
+
+
+
 }
 
 function parsePreciosGasolineras(gasolineras){
