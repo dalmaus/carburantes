@@ -7,10 +7,6 @@ async function init(){
     let map = createMapa();
     L.Control.geocoder().addTo(map); //agrega botón de búsqueda
     let gasolineras = await cargaDatos();
-    let precios = parsePreciosGasolineras(gasolineras);
-
-    const precioMin = getPrecioMinimo(precios);
-    const precioMax = getPrecioMaximo(precios);
 
     let markers = L.markerClusterGroup({
         maxClusterRadius: 130, //distancia a la que se forman los clusters, default 80
@@ -18,9 +14,10 @@ async function init(){
     });
 
     globals.router = createRouteControl();
-    for(let gasolinera of gasolineras.ListaEESSPrecio){
-        let marker = addMarker(gasolinera, precioMin, precioMax); //posiciona el marcador
-        addPopup(map, marker, gasolinera); //añade la información del marcador en click
+    for(let i = 0; i < gasolineras.length; i++){
+        //let marker = addMarker(gasolinera, precioMin, precioMax); //posiciona el marcador
+        let marker = addMarker(gasolineras[i], i, gasolineras.length)
+        addPopup(map, marker, gasolineras[i]); //añade la información del marcador en click
         markers.addLayer(marker);
     }
     map.addLayer(markers);
@@ -52,18 +49,13 @@ function createRouteControl(){
 function markerPunto(e){
 
 }
-function addMarker(gasolinera, precioMin, precioMax){
+function addMarker(gasolinera, index, arrayLength){
 
-    let precioActual = gasolinera['Precio Gasoleo A'].replace(',', '.');
-    const maximoEscala = 5;
-
-    precioActual = (precioActual == '') ? precioMax : parseFloat(precioActual);
-
-    let posicionEnEscala = Math.round((precioActual-precioMin)*maximoEscala/(precioMax-precioMin)*100)/100
-    let markerIconNumero = getNumeroIcono(posicionEnEscala);
+    const maximoEscala = 5; //6 colores - 1 al empezar de 0
+    let posicionEnEscala = Math.round((index/arrayLength)*maximoEscala); //cálculo percentiles llevado a 6 colores
 
     const icono = L.icon({
-        iconUrl: `src/icons/marker-${markerIconNumero}.png`,
+        iconUrl: `src/icons/marker-${posicionEnEscala}.png`,
         iconSize: [24, 36],
         popupAnchor: [0, -17]
     });
@@ -76,33 +68,6 @@ function addMarker(gasolinera, precioMin, precioMax){
     marker.on('click', markerPunto);
 
     return marker;
-}
-
-//devuelve el número con el que se escogerá el icono que de precio que le corresponde
-function getNumeroIcono(posicion){
-
-    let markerIconNumero = 0;
-
-    if(posicion < 1.1){
-        markerIconNumero = 0;
-    }
-    else if(posicion >= 1.1 && posicion < 1.3){
-        markerIconNumero = 1;
-    }
-    else if(posicion >= 1.3 && posicion < 1.5){
-        markerIconNumero = 2;
-    }
-    else if(posicion >= 1.5 && posicion < 1.8){
-        markerIconNumero = 3;
-    }
-    else if(posicion >= 1.8 && posicion < 2){
-        markerIconNumero = 4;
-    }
-    else{
-        markerIconNumero = 5;
-    }
-
-    return markerIconNumero;
 }
 
 function addPopup(map, marker, gasolinera, routeControl){
@@ -186,12 +151,35 @@ function getPrecioMaximo(precios){
 
     return precios.reduce((a, b) => Math.max(a, b));
 }
+
 //cambiar por fichero que haga peticiones acorde a la frecuencia de actualización de la API.
 async function cargaDatos(){
 
     let respuesta =
-        await axios.get('https://sedeaplicaciones.minetur.gob.es/ServiciosRESTCarburantes/PreciosCarburantes/EstacionesTerrestres/');
+        await fetch('./src/data/gas_stations.json')
+            .then(response => response.json());
 
-    return respuesta.data;
+
+    return sort(respuesta['ListaEESSPrecio']);
 }
 
+function sort(datosGasolineras){ //función provisional -- el sorting debería hacerse desde fuera del archivo. el parseo también debe ir fuera de este script
+
+
+    datosGasolineras = datosGasolineras.filter((gasolinera) => gasolinera['Precio Gasoleo A'] !== '')
+        .map((gasolinera) => (
+            {
+                ...gasolinera,
+                'Precio Gasoleo A': parseFloat(gasolinera['Precio Gasoleo A'].replace(',','.'))
+            }
+    ));
+
+    datosGasolineras.sort((gasolineraA, gasolineraB) => {
+        let precioA = gasolineraA['Precio Gasoleo A'];
+        let precioB = gasolineraB['Precio Gasoleo A'];
+
+        return precioA - precioB;
+    })
+
+    return datosGasolineras;
+}
