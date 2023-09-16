@@ -14,14 +14,13 @@ async function init(){
     });
 
     globals.router = createRouteControl();
+
     for(let i = 0; i < gasolineras.length; i++){
-        //let marker = addMarker(gasolinera, precioMin, precioMax); //posiciona el marcador
         let marker = addMarker(gasolineras[i], i, gasolineras.length)
         addPopup(map, marker, gasolineras[i]); //añade la información del marcador en click
         markers.addLayer(marker);
     }
     map.addLayer(markers);
-    // navigator.geolocation.getCurrentPosition((pos)=>console.log(pos), console.log('fial'), {enableHighAccuracy: true});
 
 }
 
@@ -117,16 +116,28 @@ function addPopup(map, marker, gasolinera, routeControl){
 
 }
 
-function comoLlegar(e, map, marker){
+function comoLlegar(e, map, marker){ //funcionalidad del botón "como llegar"
 
-    if(e.target.classList.contains('boton-como-llegar')) {
-        let router = globals.router;
-        router.addTo(map)
-        let lat = marker._latlng.lat;
-        let lng = marker._latlng.lng;
-        addBotonCancelarRuta(map, router);
-        router.setWaypoints([L.latLng(lat, lng), L.latLng(40.1, -3.4)]);
+    if(e.target.classList.contains('boton-como-llegar')){
+        navigator
+            .geolocation
+            .getCurrentPosition(
+                pos => createRuta(pos, map, marker),
+                alert("No ha sido posible obtener la ubicación."),
+                {enableHighAccuracy : true, timeout: 5000}); //falta catch y precisión geolocalizacion
     }
+}
+
+function createRuta(pos, map, marker){
+    let router = globals.router;
+    router.addTo(map);
+    addBotonCancelarRuta(map, router);
+
+    let stationLat = marker._latlng.lat;
+    let stationLng = marker._latlng.lng;
+    let userLat = pos.coords.latitude;
+    let userLng = pos.coords.longitude;
+    router.setWaypoints([L.latLng(stationLat, stationLng), L.latLng(userLat, userLng)]); //segundo waypoint ha de ser localización de usuario.
 }
 
 function addBotonCancelarRuta(map, router){
@@ -141,15 +152,6 @@ function addBotonCancelarRuta(map, router){
 function parsePreciosGasolineras(gasolineras){
     return gasolineras.ListaEESSPrecio.filter((gasolinera) => gasolinera['Precio Gasoleo A'] !== '')
         .map((gasolinera) => parseFloat(gasolinera['Precio Gasoleo A'].replace(',','.')));
-}
-//filtra y parsea devolviendo el valor de precio más pequeño
-function getPrecioMinimo(precios){
-
-    return precios.reduce((a, b) => Math.min(a, b));
-}
-function getPrecioMaximo(precios){
-
-    return precios.reduce((a, b) => Math.max(a, b));
 }
 
 //cambiar por fichero que haga peticiones acorde a la frecuencia de actualización de la API.
