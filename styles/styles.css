@@ -1,0 +1,60 @@
+*{
+    margin: 0;
+    padding: 0;
+}
+#map{
+    position: absolute;
+    height: 100%;
+    width: 100%;
+}
+
+.popup ul{
+    list-style-type: none;
+}
+p{
+    margin: 5px 0 !important;
+    padding: 3px;
+}
+.leaflet-popup-content table tr td:first-child{
+    padding: 0 16px 0 0;
+}
+.leaflet-popup-content th{
+    font-weight: normal;
+    font-size: 16px;
+    padding: 0 0 6px 0;
+}
+.empresa{
+
+    background: black;
+    color: white;
+    border-radius: 3px;
+    font-weight: bold;
+}
+.precios{
+    font-weight: bold;
+
+}
+.marker-personalizado{
+    width: 3rem;
+    height: 3rem;
+    display: block;
+    left: -1.5rem;
+    top: -1.5rem;
+    position: relative;
+    border-radius: 3rem 3rem 0;
+    transform: rotate(45deg);
+    border: 1px solid #FFFFFF;
+}
+.boton-como-llegar:hover{
+    cursor: pointer;
+}
+.boton-cancelar-ruta{
+    text-align: center;
+    position: absolute;
+    bottom: 25px;
+    right: 50%;
+    z-index: 999;
+}
+.boton-cancelar-ruta button:hover{
+    cursor: pointer;
+}
