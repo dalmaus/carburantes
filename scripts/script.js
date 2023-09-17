@@ -133,11 +133,11 @@ function createRuta(pos, map, marker){
     router.addTo(map);
     addBotonCancelarRuta(map, router);
 
-    let stationLat = marker._latlng.lat;
-    let stationLng = marker._latlng.lng;
+    let estacionLat = marker._latlng.lat;
+    let estacionLng = marker._latlng.lng;
     let userLat = pos.coords.latitude;
     let userLng = pos.coords.longitude;
-    router.setWaypoints([L.latLng(stationLat, stationLng), L.latLng(userLat, userLng)]); //segundo waypoint ha de ser localización de usuario.
+    router.setWaypoints([L.latLng(estacionLat, estacionLng), L.latLng(userLat, userLng)]); //segundo waypoint ha de ser localización de usuario.
 }
 
 function addBotonCancelarRuta(map, router){
@@ -162,26 +162,5 @@ async function cargaDatos(){
             .then(response => response.json());
 
 
-    return sort(respuesta['ListaEESSPrecio']);
-}
-
-function sort(datosGasolineras){ //función provisional -- el sorting debería hacerse desde fuera del archivo. el parseo también debe ir fuera de este script
-
-
-    datosGasolineras = datosGasolineras.filter((gasolinera) => gasolinera['Precio Gasoleo A'] !== '')
-        .map((gasolinera) => (
-            {
-                ...gasolinera,
-                'Precio Gasoleo A': parseFloat(gasolinera['Precio Gasoleo A'].replace(',','.'))
-            }
-    ));
-
-    datosGasolineras.sort((gasolineraA, gasolineraB) => {
-        let precioA = gasolineraA['Precio Gasoleo A'];
-        let precioB = gasolineraB['Precio Gasoleo A'];
-
-        return precioA - precioB;
-    })
-
-    return datosGasolineras;
+    return respuesta;
 }
