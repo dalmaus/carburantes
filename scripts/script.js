@@ -69,10 +69,6 @@ function createRouteControl(){
     });
 }
 
-// function markerPunto(){
-//
-// }
-
 function addMarker(gasolinera, index, arrayLength){
 
     const maximoEscala = 5; //6 colores - 1 al empezar de 0
@@ -155,9 +151,7 @@ function createRuta(pos, map, marker){
 
     let estacionLat = marker._latlng.lat;
     let estacionLng = marker._latlng.lng;
-    // let userLat = pos.latitude;
-    // let userLng = pos.longitude;
-    console.log(globals.userLocation)
+
     router.setWaypoints([L.latLng(estacionLat, estacionLng), L.latLng(globals.userLocation.latitude, globals.userLocation.longitude)]); //segundo waypoint ha de ser localización de usuario.
 }
 
@@ -168,11 +162,6 @@ function addBotonCancelarRuta(map, router){
         map.removeControl(router);
         botonCancelarRuta.setAttribute('hidden', true);
     })
-}
-
-function parsePreciosGasolineras(gasolineras){
-    return gasolineras.ListaEESSPrecio.filter((gasolinera) => gasolinera['Precio Gasoleo A'] !== '')
-        .map((gasolinera) => parseFloat(gasolinera['Precio Gasoleo A'].replace(',','.')));
 }
 
 //cambiar por fichero que haga peticiones acorde a la frecuencia de actualización de la API.
