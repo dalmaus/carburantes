@@ -55,6 +55,13 @@ p{
     right: 50%;
     z-index: 999;
 }
+.boton-cancelar-ruta button{
+    padding: 6px;
+    background: white;
+    border: 1px solid gray;
+    border-radius: 6px;
+    box-shadow: 0 3px 14px rgba(0,0,0,0.4);
+}
 .boton-cancelar-ruta button:hover{
     cursor: pointer;
 }

@@ -1,6 +1,6 @@
 let globals = {
     router: {},
-    defaultLocation: { latitude : 40.416607, lng: -3.703836}, //Madrid
+    defaultLocation: { latitude : 40.416607, longitude: -3.703836}, //Madrid
     userLocation: null, //revisar si esta propiedad debería eliminarse, y simplemente llamar a la funcion loadUbicacion
 }
 
@@ -48,7 +48,7 @@ function loadUbicacion(map){
 }
 
 function createMapa(){ //establece la vista inicial del mapa y establece el proveedor de 'tile layers'
-    let map = L.map('map').setView([globals.defaultLocation.latitude, globals.defaultLocation.lng], 12);
+    let map = L.map('map').setView([globals.defaultLocation.latitude, globals.defaultLocation.longitude], 12);
 
     L.tileLayer('https://tile.openstreetmap.org/{z}/{x}/{y}.png', {
          maxZoom: 19,
@@ -157,6 +157,7 @@ function createRuta(pos, map, marker){
     let estacionLng = marker._latlng.lng;
     // let userLat = pos.latitude;
     // let userLng = pos.longitude;
+    console.log(globals.userLocation)
     router.setWaypoints([L.latLng(estacionLat, estacionLng), L.latLng(globals.userLocation.latitude, globals.userLocation.longitude)]); //segundo waypoint ha de ser localización de usuario.
 }
 
