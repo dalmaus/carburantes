@@ -2,7 +2,8 @@ const axios = require('axios');
 const fs = require('fs');
 
 const url = 'https://sedeaplicaciones.minetur.gob.es/ServiciosRESTCarburantes/PreciosCarburantes/EstacionesTerrestres/';
-
+const path = `${__dirname}/../src/data/`;
+const fileName = 'gas_stations.json';
 
 axios.get(url)
     .then(respuesta => {
@@ -20,7 +21,7 @@ axios.get(url)
                         }
             ); //datos filtrados, ordenados y parseados
 
-            fs.writeFileSync('src/data/gas_stations.json', JSON.stringify(datosGasolineraSorted));
+            fs.writeFileSync(path + fileName, JSON.stringify(datosGasolineraSorted));
 
         } else {
             console.error('Petición HTTP fallida con código:', respuesta.status);
