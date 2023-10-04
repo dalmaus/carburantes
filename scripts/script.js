@@ -1,14 +1,13 @@
 let globals = {
     router: {},
     defaultLocation: { latitude : 40.416607, longitude: -3.703836}, //Madrid
-    userLocation: null, //revisar si esta propiedad debería eliminarse, y simplemente llamar a la funcion loadUbicacion
 }
 
 async function init(){
 
     const map = createMapa();
 
-    loadUbicacion(map);
+    useUbicacion(map, null, flyTo);
 
     L.Control.geocoder().addTo(map); //agrega botón de búsqueda
 
@@ -30,18 +29,18 @@ async function init(){
 
 
 }
+function flyTo(position, map){ //vuela hasta la localización del usuario
+    map.flyTo([position.coords.latitude, position.coords.longitude], 12);
+}
+function useUbicacion(map, marker, successCallback){
 
-function loadUbicacion(map){
-
-        navigator
-            .geolocation
-            .getCurrentPosition(position => {
-                globals.userLocation = position.coords;
-                map.flyTo([globals.userLocation.latitude, globals.userLocation.longitude], 12);
-            },
+    // globals.userLocation = position.coords;
+    // map.flyTo([globals.userLocation.latitude, globals.userLocation.longitude], 12);
+    navigator
+        .geolocation
+        .getCurrentPosition(position => successCallback(position, map, marker),
             error => {
-                alert('No se ha podido acceder a la ubicación.');
-                globals.userLocation = globals.defaultLocation;
+                alert('No se ha podido acceder a la ubicación. Por favor, activa la geolocalización en tu dispositivo.');
             },
             { enableHighAccuracy: true, timeout: 5000 }
         );
@@ -51,9 +50,9 @@ function createMapa(){ //establece la vista inicial del mapa y establece el prov
     let map = L.map('map').setView([globals.defaultLocation.latitude, globals.defaultLocation.longitude], 12);
 
     L.tileLayer('https://tile.openstreetmap.org/{z}/{x}/{y}.png', {
-         maxZoom: 19,
-         attribution: '&copy; <a href="http://www.openstreetmap.org/copyright">OpenStreetMap</a>'
-     }).addTo(map);
+        maxZoom: 19,
+        attribution: '&copy; <a href="http://www.openstreetmap.org/copyright">OpenStreetMap</a>'
+    }).addTo(map);
 
     return map;
 
@@ -134,17 +133,16 @@ function addPopup(map, marker, gasolinera){
 
     contenido.addEventListener('click', e => comoLlegar(e, map, marker));
     marker.bindPopup(contenido);
-
 }
 
 function comoLlegar(e, map, marker){ //funcionalidad del botón "como llegar"
-
     if(e.target.classList.contains('boton-como-llegar')){
-        createRuta(globals.userLocation, map, marker);
+        useUbicacion(map, marker, createRuta);
     }
 }
 
-function createRuta(pos, map, marker){
+function createRuta(position, map, marker){
+
     let router = globals.router;
     router.addTo(map);
     addBotonCancelarRuta(map, router);
@@ -152,7 +150,7 @@ function createRuta(pos, map, marker){
     let estacionLat = marker._latlng.lat;
     let estacionLng = marker._latlng.lng;
 
-    router.setWaypoints([L.latLng(estacionLat, estacionLng), L.latLng(globals.userLocation.latitude, globals.userLocation.longitude)]); //segundo waypoint ha de ser localización de usuario.
+    router.setWaypoints([L.latLng(estacionLat, estacionLng), L.latLng(position.coords.latitude, position.coords.longitude)]); //segundo waypoint ha de ser localización de usuario.
 }
 
 function addBotonCancelarRuta(map, router){
@@ -166,7 +164,6 @@ function addBotonCancelarRuta(map, router){
 
 //cambiar por fichero que haga peticiones acorde a la frecuencia de actualización de la API.
 async function cargaDatos(){
-
     let respuesta =
         await fetch('./src/data/gas_stations.json')
             .then(response => response.json());
