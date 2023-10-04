@@ -34,8 +34,6 @@ function flyTo(position, map){ //vuela hasta la localización del usuario
 }
 function useUbicacion(map, marker, successCallback){
 
-    // globals.userLocation = position.coords;
-    // map.flyTo([globals.userLocation.latitude, globals.userLocation.longitude], 12);
     navigator
         .geolocation
         .getCurrentPosition(position => successCallback(position, map, marker),
