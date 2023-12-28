@@ -1,14 +1,16 @@
 let globals = {
     router: {},
-    // defaultIcon: L.Icon({
-    //     iconUrl: '../src/icons/marker-icon-2x.png'
-    // })
+    defaultLocation: { latitude : 40.416607, longitude: -3.703836}, //Madrid
 }
 
 async function init(){
 
-    let map = createMapa();
+    const map = createMapa();
+
+    useUbicacion(map, null, flyTo);
+
     L.Control.geocoder().addTo(map); //agrega botón de búsqueda
+
     let gasolineras = await cargaDatos();
 
     let markers = L.markerClusterGroup({
@@ -25,18 +27,30 @@ async function init(){
     }
     map.addLayer(markers);
 
-    // L.Marker.prototype.options.icon = L.icon({ //marker por defecto
-    //     iconUrl: "../src/icons/marker-icon-2x.png",
-    // });
+
+}
+function flyTo(position, map){ //vuela hasta la localización del usuario
+    map.flyTo([position.coords.latitude, position.coords.longitude], 12);
+}
+function useUbicacion(map, marker, successCallback){
+
+    navigator
+        .geolocation
+        .getCurrentPosition(position => successCallback(position, map, marker),
+            error => {
+                alert('No se ha podido acceder a la ubicación. Por favor, activa la geolocalización en tu dispositivo.');
+            },
+            { enableHighAccuracy: true, timeout: 5000 }
+        );
 }
 
 function createMapa(){ //establece la vista inicial del mapa y establece el proveedor de 'tile layers'
-    let map = L.map('map').setView([40.416607, -3.703836], 12);
+    let map = L.map('map').setView([globals.defaultLocation.latitude, globals.defaultLocation.longitude], 12);
 
     L.tileLayer('https://tile.openstreetmap.org/{z}/{x}/{y}.png', {
-         maxZoom: 19,
-         attribution: '&copy; <a href="http://www.openstreetmap.org/copyright">OpenStreetMap</a>'
-     }).addTo(map);
+        maxZoom: 19,
+        attribution: '&copy; <a href="http://www.openstreetmap.org/copyright">OpenStreetMap</a>'
+    }).addTo(map);
 
     return map;
 
@@ -46,16 +60,12 @@ function createRouteControl(){
     return L.Routing.control({ //ver que devuelve esto y gestionar su borrado al añadir otra ruta
         language: 'es',
         addWaypoints: false,
-
         // lineOptions: {
         //     styles: [{color: 'blue'}]
         // }
-
     });
 }
-function markerPunto(e){
 
-}
 function addMarker(gasolinera, index, arrayLength){
 
     const maximoEscala = 5; //6 colores - 1 al empezar de 0
@@ -72,12 +82,12 @@ function addMarker(gasolinera, index, arrayLength){
 
     let marker = L.marker([latitud, longitud], {icon: icono});
 
-    marker.on('click', markerPunto);
+    //marker.on('click', markerPunto); //revisar
 
     return marker;
 }
 
-function addPopup(map, marker, gasolinera, routeControl){
+function addPopup(map, marker, gasolinera){
 
     let gasolineraNombre = gasolinera['Rótulo'] || '-';
     let precioGasoleoA = gasolinera['Precio Gasoleo A'] || '-';
@@ -121,31 +131,24 @@ function addPopup(map, marker, gasolinera, routeControl){
 
     contenido.addEventListener('click', e => comoLlegar(e, map, marker));
     marker.bindPopup(contenido);
-
 }
 
 function comoLlegar(e, map, marker){ //funcionalidad del botón "como llegar"
-
     if(e.target.classList.contains('boton-como-llegar')){
-        navigator
-            .geolocation
-            .getCurrentPosition(
-                pos => createRuta(pos, map, marker),
-                alert("No ha sido posible obtener la ubicación."),
-                {enableHighAccuracy : true, timeout: 5000}); //falta catch y precisión geolocalizacion
+        useUbicacion(map, marker, createRuta);
     }
 }
 
-function createRuta(pos, map, marker){
+function createRuta(position, map, marker){
+
     let router = globals.router;
     router.addTo(map);
     addBotonCancelarRuta(map, router);
 
-    let stationLat = marker._latlng.lat;
-    let stationLng = marker._latlng.lng;
-    let userLat = pos.coords.latitude;
-    let userLng = pos.coords.longitude;
-    router.setWaypoints([L.latLng(stationLat, stationLng), L.latLng(userLat, userLng)]); //segundo waypoint ha de ser localización de usuario.
+    let estacionLat = marker._latlng.lat;
+    let estacionLng = marker._latlng.lng;
+
+    router.setWaypoints([L.latLng(estacionLat, estacionLng), L.latLng(position.coords.latitude, position.coords.longitude)]); //segundo waypoint ha de ser localización de usuario.
 }
 
 function addBotonCancelarRuta(map, router){
@@ -157,39 +160,13 @@ function addBotonCancelarRuta(map, router){
     })
 }
 
-function parsePreciosGasolineras(gasolineras){
-    return gasolineras.ListaEESSPrecio.filter((gasolinera) => gasolinera['Precio Gasoleo A'] !== '')
-        .map((gasolinera) => parseFloat(gasolinera['Precio Gasoleo A'].replace(',','.')));
-}
-
 //cambiar por fichero que haga peticiones acorde a la frecuencia de actualización de la API.
 async function cargaDatos(){
-
     let respuesta =
         await fetch('./src/data/gas_stations.json')
             .then(response => response.json());
 
-
-    return sort(respuesta['ListaEESSPrecio']);
+    return respuesta;
 }
 
-function sort(datosGasolineras){ //función provisional -- el sorting debería hacerse desde fuera del archivo. el parseo también debe ir fuera de este script
-
-
-    datosGasolineras = datosGasolineras.filter((gasolinera) => gasolinera['Precio Gasoleo A'] !== '')
-        .map((gasolinera) => (
-            {
-                ...gasolinera,
-                'Precio Gasoleo A': parseFloat(gasolinera['Precio Gasoleo A'].replace(',','.'))
-            }
-    ));
-
-    datosGasolineras.sort((gasolineraA, gasolineraB) => {
-        let precioA = gasolineraA['Precio Gasoleo A'];
-        let precioB = gasolineraB['Precio Gasoleo A'];
-
-        return precioA - precioB;
-    })
-
-    return datosGasolineras;
-}
+//pasar todo a inglés
