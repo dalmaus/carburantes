@@ -1,5 +1,8 @@
 let globals = {
-    router: {}
+    router: {},
+    // defaultIcon: L.Icon({
+    //     iconUrl: '../src/icons/marker-icon-2x.png'
+    // })
 }
 
 async function init(){
@@ -22,6 +25,9 @@ async function init(){
     }
     map.addLayer(markers);
 
+    // L.Marker.prototype.options.icon = L.icon({ //marker por defecto
+    //     iconUrl: "../src/icons/marker-icon-2x.png",
+    // });
 }
 
 function createMapa(){ //establece la vista inicial del mapa y establece el proveedor de 'tile layers'
@@ -40,9 +46,11 @@ function createRouteControl(){
     return L.Routing.control({ //ver que devuelve esto y gestionar su borrado al añadir otra ruta
         language: 'es',
         addWaypoints: false,
+
         // lineOptions: {
         //     styles: [{color: 'blue'}]
         // }
+
     });
 }
 function markerPunto(e){
