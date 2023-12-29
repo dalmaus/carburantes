@@ -148,7 +148,7 @@ function createRuta(position, map, marker){
     let estacionLat = marker._latlng.lat;
     let estacionLng = marker._latlng.lng;
 
-    router.setWaypoints([L.latLng(estacionLat, estacionLng), L.latLng(position.coords.latitude, position.coords.longitude)]); //segundo waypoint ha de ser localización de usuario.
+    router.setWaypoints([L.latLng(position.coords.latitude, position.coords.longitude), L.latLng(estacionLat, estacionLng)]); //segundo waypoint ha de ser localización de usuario.
 }
 
 function addBotonCancelarRuta(map, router){
